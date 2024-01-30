@@ -12,11 +12,15 @@ const App = () => {
 
   const onSubmit = (event) => {
     event.preventDefault()
-    const personObject = {
-      name: newName
+    if (persons.filter(person => person.name === newName).length > 0)
+      alert(`${newName} is already added to phonebook`)
+    else {
+      const personObject = {
+        name: newName
+      }
+      setPersons(persons.concat(personObject))
+      setNewName('')
     }
-    setPersons(persons.concat(personObject))
-    setNewName('')
   }
 
   return (
