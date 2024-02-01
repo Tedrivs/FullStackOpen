@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Filter from './Components/Filter'
 import PersonForm from './Components/PersonForm'
 import Persons from './Components/Persons'
-import axios from 'axios'
+import personsService from './Services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -11,10 +11,7 @@ const App = () => {
   const [filter, setFilter] = useState('')
 
   useEffect(() => {
-    axios.get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
+    personsService.getAll().then(personsResult => setPersons(personsResult))
   }, [])
 
   const filteredNumbers = filter.length > 0
@@ -42,10 +39,17 @@ const App = () => {
         name: newName,
         number: newNumber
       }
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
+      personsService.create(personObject).then(result => {
+        setPersons(persons.concat(result))
+        setNewName('')
+        setNewNumber('')
+      })
     }
+  }
+
+  const onDelete = (person) => {
+    if (window.confirm(`Delete ${person.name}?`))
+      personsService.deletePerson(person.id).then(setPersons(persons.filter(x => x.id != person.id)))
   }
 
   return (
@@ -55,7 +59,7 @@ const App = () => {
       <h3>add a new</h3>
       <PersonForm onSubmit={onSubmit} newName={newName} newNumber={newNumber} onNameChange={onNameChange} onNumberChange={onNumberChange} />
       <h3>Numbers</h3>
-      <Persons persons={filteredNumbers} />
+      <Persons persons={filteredNumbers} onDelete={onDelete} />
     </div>
   )
 }
