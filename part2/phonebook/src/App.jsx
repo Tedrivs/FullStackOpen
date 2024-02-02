@@ -3,12 +3,15 @@ import Filter from './Components/Filter'
 import PersonForm from './Components/PersonForm'
 import Persons from './Components/Persons'
 import personsService from './Services/persons'
+import Notification from './Components/Notification'
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [notification, setNotification] = useState()
 
   useEffect(() => {
     personsService.getAll().then(personsResult => setPersons(personsResult))
@@ -43,7 +46,13 @@ const App = () => {
           setPersons(persons.map(person => person.id === result.id ? result : person))
           setNewName('')
           setNewNumber('')
-        })
+        }).then(() => {
+          setNotification(`Updated ${newName}`)
+          setTimeout(() => {
+            setNotification(null)
+          }, 5000);
+        }
+        )
       }
     }
     else {
@@ -52,18 +61,25 @@ const App = () => {
         setPersons(persons.concat(result))
         setNewName('')
         setNewNumber('')
-      })
+      }).then(() => {
+        setNotification(`Added ${newName}`)
+        setTimeout(() => {
+          setNotification(null)
+        }, 5000);
+      }
+      )
     }
   }
 
   const onDelete = (person) => {
-    if (window.confirm(`Delete ${person.name}?`))
+    if (window.confirm(`Delete ${person.name} ? `))
       personsService.deletePerson(person.id).then(setPersons(persons.filter(x => x.id != person.id)))
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification} />
       <Filter filter={filter} onChange={onFilterChange} />
       <h3>add a new</h3>
       <PersonForm onSubmit={onSubmit} newName={newName} newNumber={newNumber} onNameChange={onNameChange} onNumberChange={onNumberChange} />
