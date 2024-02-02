@@ -12,6 +12,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
   const [notification, setNotification] = useState()
+  const [error, setError] = useState()
 
   useEffect(() => {
     personsService.getAll().then(personsResult => setPersons(personsResult))
@@ -46,13 +47,17 @@ const App = () => {
           setPersons(persons.map(person => person.id === result.id ? result : person))
           setNewName('')
           setNewNumber('')
-        }).then(() => {
           setNotification(`Updated ${newName}`)
           setTimeout(() => {
             setNotification(null)
           }, 5000);
-        }
-        )
+        }).catch(() => {
+          setError(`Could not update ${newName}`)
+          setTimeout(() => {
+            setError(null)
+          }, 5000);
+          setPersons(persons.filter(person => person.id !== existingPerson[0].id))
+        })
       }
     }
     else {
@@ -61,10 +66,14 @@ const App = () => {
         setPersons(persons.concat(result))
         setNewName('')
         setNewNumber('')
-      }).then(() => {
         setNotification(`Added ${newName}`)
         setTimeout(() => {
           setNotification(null)
+        }, 5000);
+      }).catch(() => {
+        setError(`Could not add ${newName}`)
+        setTimeout(() => {
+          setError(null)
         }, 5000);
       }
       )
@@ -80,6 +89,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       <Notification message={notification} />
+      <Notification message={error} error={true} />
       <Filter filter={filter} onChange={onFilterChange} />
       <h3>add a new</h3>
       <PersonForm onSubmit={onSubmit} newName={newName} newNumber={newNumber} onNameChange={onNameChange} onNumberChange={onNumberChange} />
