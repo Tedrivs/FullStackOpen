@@ -22,11 +22,14 @@ function App() {
     setFilter(event.target.value)
   }
 
+  const onSelectCountry = (name) => {
+    setFilter(name)
+  }
+
   return (
     <>
       <Search value={filter} onChange={onFilterChange} />
-      <div>debug: {filter}</div>
-      <CountryList countries={filteredCountries} />
+      <CountryList countries={filteredCountries} onSelectCountry={onSelectCountry} />
     </>
   )
 }
