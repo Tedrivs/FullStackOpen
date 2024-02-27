@@ -13,11 +13,15 @@ const totalLikes = (blogs) => {
 }
 
 const favoriteBlog = (blogs) => {
+  return favorite(blogs)
+}
+
+const favorite = (collectionWithLikes) => {
   const reducer = (highest, item) => {
     return highest.likes > item.likes ? highest : item
   }
 
-  return blogs.reduce(reducer, 0)
+  return collectionWithLikes.reduce(reducer, 0)
 }
 
 const mostBlogs = (blogs) => {
@@ -30,9 +34,24 @@ const mostBlogs = (blogs) => {
   return author
 }
 
+const mostLikes = (blogs) => {
+  if (blogs.length === 0) return ''
+
+  const authors = []
+
+  blogs.forEach((x) => {
+    authors.find((y) => y.author === x.author)
+      ? (authors.find((y) => y.author === x.author).likes += x.likes)
+      : authors.push({ author: x.author, likes: x.likes })
+  })
+
+  return favorite(authors)
+}
+
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
   mostBlogs,
+  mostLikes,
 }

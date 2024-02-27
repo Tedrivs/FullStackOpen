@@ -76,3 +76,24 @@ describe('mostBlogs', () => {
     assert.strictEqual(result, 'Tolkien')
   })
 })
+
+describe('mostLikes', () => {
+  test('when no blogs ', () => {
+    const blogs = []
+    const result = listHelper.mostLikes(blogs)
+    assert.strictEqual(result, '')
+  })
+
+  test('in big list', () => {
+    const blogs = [
+      { title: 'Test1', author: 'Tolkien', url: 'String', likes: 6 },
+      { title: 'Test2', author: 'Rowling', url: 'String', likes: 4 },
+      { title: 'Test3', author: 'Rowling', url: 'String', likes: 5 },
+      { title: 'Test4', author: 'Seuss', url: 'String', likes: 3 },
+      { title: 'Test5', author: 'Tolkien', url: 'String', likes: 3 },
+      { title: 'Test6', author: 'Tolkien', url: 'String', likes: 3 },
+    ]
+    const result = listHelper.mostLikes(blogs)
+    assert.deepStrictEqual(result, { author: 'Tolkien', likes: 12 })
+  })
+})
