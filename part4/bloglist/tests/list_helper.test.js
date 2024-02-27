@@ -32,3 +32,20 @@ describe('total likes', () => {
     assert.strictEqual(result, 12)
   })
 })
+
+describe('favorite', () => {
+  test('favorite', () => {
+    const blogs = [
+      { title: 'Test1', author: 'String', url: 'String', likes: 3 },
+      { title: 'Test2', author: 'String', url: 'String', likes: 4 },
+      { title: 'Test3', author: 'String', url: 'String', likes: 5 },
+    ]
+    const result = listHelper.favoriteBlog(blogs)
+    assert.deepStrictEqual(result, {
+      title: 'Test3',
+      author: 'String',
+      url: 'String',
+      likes: 5,
+    })
+  })
+})
