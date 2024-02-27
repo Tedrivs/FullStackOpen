@@ -33,7 +33,13 @@ describe('total likes', () => {
   })
 })
 
-describe('favorite', () => {
+describe('favoriteBlog', () => {
+  test('noBlogs', () => {
+    const blogs = []
+    const result = listHelper.mostBlogs(blogs)
+    assert.strictEqual(result, '')
+  })
+
   test('favorite', () => {
     const blogs = [
       { title: 'Test1', author: 'String', url: 'String', likes: 3 },
@@ -47,5 +53,26 @@ describe('favorite', () => {
       url: 'String',
       likes: 5,
     })
+  })
+})
+
+describe('mostBlogs', () => {
+  test('when no blogs ', () => {
+    const blogs = []
+    const result = listHelper.mostBlogs(blogs)
+    assert.strictEqual(result, '')
+  })
+
+  test('in big list', () => {
+    const blogs = [
+      { title: 'Test1', author: 'Tolkien', url: 'String', likes: 3 },
+      { title: 'Test2', author: 'Rowling', url: 'String', likes: 4 },
+      { title: 'Test3', author: 'Rowling', url: 'String', likes: 5 },
+      { title: 'Test4', author: 'Seuss', url: 'String', likes: 3 },
+      { title: 'Test5', author: 'Tolkien', url: 'String', likes: 3 },
+      { title: 'Test6', author: 'Tolkien', url: 'String', likes: 3 },
+    ]
+    const result = listHelper.mostBlogs(blogs)
+    assert.strictEqual(result, 'Tolkien')
   })
 })
