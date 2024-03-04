@@ -30,7 +30,17 @@ test('blogs returns correct amount', async () => {
 
 test('blogs has property named id', async () => {
   const response = await api.get('/api/blogs')
-  assert.strictEqual(response.body[0].hasOwnProperty('id'), true)
+  assert.strictEqual(
+    Object.prototype.hasOwnProperty.call(response.body[0], 'id'),
+    true
+  )
+})
+
+test('post creates a blog', async () => {
+  const body = new Blog({ title: 'NewBlog' })
+  await body.save(body)
+  const response = await api.get('/api/blogs')
+  assert.strictEqual(response.body.length, helper.initialNotes.length + 1)
 })
 
 after(async () => {
