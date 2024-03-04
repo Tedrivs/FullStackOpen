@@ -11,11 +11,9 @@ const api = supertest(app)
 beforeEach(async () => {
   await Blog.deleteMany({})
 
-  let noteObject = new Blog(helper.initialNotes[0])
-  await noteObject.save()
-
-  noteObject = new Blog(helper.initialNotes[1])
-  await noteObject.save()
+  const blogObjects = helper.initialNotes.map((note) => new Blog(note))
+  const promiseArray = blogObjects.map((blog) => blog.save())
+  await Promise.all(promiseArray)
 })
 
 test('blogs are returned as json', async () => {
@@ -27,7 +25,7 @@ test('blogs are returned as json', async () => {
 
 test('blogs returns correct amount', async () => {
   const response = await api.get('/api/blogs')
-  assert.strictEqual(response.body.length, 2)
+  assert.strictEqual(response.body.length, helper.initialNotes.length)
 })
 
 after(async () => {

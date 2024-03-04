@@ -3,6 +3,7 @@ const Blog = require('../models/blog')
 const initialNotes = [
   { title: 'Test', author: 'TestAuthor', url: 'String', likes: 3 },
   { title: 'Test2', author: 'SecondTestAuthor', url: 'String', likes: 3 },
+  { title: 'Test3', author: 'ThirdTestAuthor', url: 'String', likes: 3 },
 ]
 
 const nonExistingId = async () => {
