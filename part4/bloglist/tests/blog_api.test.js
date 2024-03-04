@@ -3,10 +3,11 @@ const mongoose = require('mongoose')
 const assert = require('node:assert')
 const supertest = require('supertest')
 const app = require('../app')
+const api = supertest(app)
+
+const helper = require('./test_helper')
 
 const Blog = require('../models/blog')
-const helper = require('./test_helper')
-const api = supertest(app)
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -37,18 +38,44 @@ test('blogs has property named id', async () => {
 })
 
 test('post creates a blog', async () => {
-  const body = new Blog({ title: 'NewBlog' })
-  await body.save(body)
-  const response = await api.get('/api/blogs')
-  assert.strictEqual(response.body.length, helper.initialNotes.length + 1)
+  const body = {
+    title: 'NewBlog',
+    author: 'NewAuthor',
+    url: 'https://www.vg.no',
+  }
+  await api.post('/api/blogs').send(body)
+  const blogsAtEnd = await helper.blogsInDb()
+  assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length + 1)
 })
 
 test('likes value is 0 if missing', async () => {
-  const body = new Blog({ title: 'NewBlog' })
-  await body.save(body)
-  const response = await api.get('/api/blogs')
-  const newBlog = response.body.find((x) => x.title === 'NewBlog')
+  const body = {
+    title: 'NewBlog',
+    author: 'NewAuthor',
+    url: 'https://www.vg.no',
+  }
+  await api.post('/api/blogs').send(body)
+  const blogsAtEnd = await helper.blogsInDb()
+  const newBlog = blogsAtEnd.find((x) => x.title === 'NewBlog')
   assert.strictEqual(newBlog.likes, 0)
+})
+
+test('respond with 400 if title is missing', async () => {
+  const body = { url: 'NewBlog' }
+  await api.post('/api/blogs').send(body).expect(400)
+
+  const response = await api.get('/api/blogs')
+
+  assert.strictEqual(response.body.length, helper.initialNotes.length)
+})
+
+test('respond with 400 if URL is missing', async () => {
+  const body = { title: 'NewBlog' }
+  await api.post('/api/blogs').send(body).expect(400)
+
+  const response = await api.get('/api/blogs')
+
+  assert.strictEqual(response.body.length, helper.initialNotes.length)
 })
 
 after(async () => {
