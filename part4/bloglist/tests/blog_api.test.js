@@ -43,6 +43,14 @@ test('post creates a blog', async () => {
   assert.strictEqual(response.body.length, helper.initialNotes.length + 1)
 })
 
+test('likes value is 0 if missing', async () => {
+  const body = new Blog({ title: 'NewBlog' })
+  await body.save(body)
+  const response = await api.get('/api/blogs')
+  const newBlog = response.body.find((x) => x.title === 'NewBlog')
+  assert.strictEqual(newBlog.likes, 0)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
