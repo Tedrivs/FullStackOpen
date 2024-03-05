@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, describe, beforeEach } = require('node:test')
 const mongoose = require('mongoose')
 const assert = require('node:assert')
 const supertest = require('supertest')
@@ -90,7 +90,29 @@ test('delete', async () => {
   const contents = blogsAtEnd.map((r) => r.title)
   assert(!contents.includes(blogToDelete.title))
 })
+describe('update tests', () => {
+  test('update likes', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+    blogToUpdate.likes++
+    await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate)
 
+    const blogsAtEnd = await helper.blogsInDb()
+    const oldBlog = blogsAtEnd.find((x) => x.title === blogToUpdate.title)
+    assert.strictEqual(oldBlog.likes, blogToUpdate.likes)
+  })
+
+  test('update url', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
+    blogToUpdate.url = 'www.newurl.com'
+    await api.put(`/api/blogs/${blogToUpdate.id}`).send(blogToUpdate)
+
+    const blogsAtEnd = await helper.blogsInDb()
+    const oldBlog = blogsAtEnd.find((x) => x.title === blogToUpdate.title)
+    assert.strictEqual(oldBlog.url, blogToUpdate.url)
+  })
+})
 after(async () => {
   await mongoose.connection.close()
 })
