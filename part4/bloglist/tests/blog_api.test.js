@@ -78,6 +78,19 @@ test('respond with 400 if URL is missing', async () => {
   assert.strictEqual(response.body.length, helper.initialNotes.length)
 })
 
+test('delete', async () => {
+  const blogsAtStart = await helper.blogsInDb()
+  const blogToDelete = blogsAtStart[0]
+  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length - 1)
+
+  const contents = blogsAtEnd.map((r) => r.title)
+  assert(!contents.includes(blogToDelete.title))
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
