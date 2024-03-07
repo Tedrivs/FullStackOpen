@@ -11,6 +11,11 @@ const User = require('../models/user')
 
 beforeEach(async () => {
   await User.deleteMany({})
+
+  const hash = await helper.hashPasswords(helper.initialUsers)
+  const userObjects = hash.map((user) => new User(user))
+  const promiseArray = userObjects.map((user) => user.save())
+  await Promise.all(promiseArray)
 })
 
 test('create user', async () => {
@@ -18,7 +23,13 @@ test('create user', async () => {
   await api.post('/api/users').send(user)
 
   const usersAtEnd = await helper.usersInDb()
-  assert.strictEqual(usersAtEnd.length, 1)
+  assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
+})
+
+test('get users', async () => {
+  const resp = await api.get('/api/users').expect(200)
+
+  assert.strictEqual(resp.body.length, helper.initialUsers.length)
 })
 
 after(async () => {

@@ -12,7 +12,7 @@ const Blog = require('../models/blog')
 beforeEach(async () => {
   await Blog.deleteMany({})
 
-  const blogObjects = helper.initialNotes.map((note) => new Blog(note))
+  const blogObjects = helper.initialNotes.map((blog) => new Blog(blog))
   const promiseArray = blogObjects.map((blog) => blog.save())
   await Promise.all(promiseArray)
 })
