@@ -17,15 +17,58 @@ beforeEach(async () => {
   const promiseArray = userObjects.map((user) => user.save())
   await Promise.all(promiseArray)
 })
+describe('create user', () => {
+  test('create user', async () => {
+    const user = { username: 'testuser', name: 'test', password: 'asdasdsa' }
+    await api.post('/api/users').send(user).expect(201)
 
-test('create user', async () => {
-  const user = { username: 'testuser', name: 'test', password: 'asdasdsa' }
-  await api.post('/api/users').send(user)
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
+  })
 
-  const usersAtEnd = await helper.usersInDb()
-  assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
+  test('user must have username', async () => {
+    const user = { name: 'test', password: 'asdasdsa' }
+    await api.post('/api/users').send(user).expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length)
+  })
+
+  test('username must be atleast 3 chars', async () => {
+    const user = { username: 'as', name: 'test', password: 'dsadsadsa' }
+    await api.post('/api/users').send(user).expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length)
+  })
+
+  test('username must be unique', async () => {
+    const user = { username: 'Hans', name: 'test', password: 'dsadsadsa' }
+    const user2 = { username: 'Hans', name: 'test2', password: 'werqrwq' }
+    await api.post('/api/users').send(user).expect(201)
+
+    await api.post('/api/users').send(user2).expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length + 1)
+  })
+
+  test('user must have password', async () => {
+    const user = { username: 'testuser', name: 'test' }
+    await api.post('/api/users').send(user).expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length)
+  })
+
+  test('password must be atleast 3 chars', async () => {
+    const user = { username: 'testuser', name: 'test', password: 'ee' }
+    await api.post('/api/users').send(user).expect(400)
+
+    const usersAtEnd = await helper.usersInDb()
+    assert.strictEqual(usersAtEnd.length, helper.initialUsers.length)
+  })
 })
-
 test('get users', async () => {
   const resp = await api.get('/api/users').expect(200)
 

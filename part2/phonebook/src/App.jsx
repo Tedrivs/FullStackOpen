@@ -51,12 +51,12 @@ const App = () => {
           setTimeout(() => {
             setNotification(null)
           }, 5000);
-        }).catch(() => {
-          setError(`Could not update ${newName}`)
+        }).catch((error) => {
+          console.log(error)
+          setError(error.response.data.error)
           setTimeout(() => {
             setError(null)
           }, 5000);
-          setPersons(persons.filter(person => person.id !== existingPerson[0].id))
         })
       }
     }
@@ -70,8 +70,9 @@ const App = () => {
         setTimeout(() => {
           setNotification(null)
         }, 5000);
-      }).catch(() => {
-        setError(`Could not add ${newName}`)
+      }).catch((error) => {
+        console.log(error)
+        setError(error.response.data.error)
         setTimeout(() => {
           setError(null)
         }, 5000);
