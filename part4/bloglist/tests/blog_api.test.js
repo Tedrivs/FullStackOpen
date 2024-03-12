@@ -8,21 +8,23 @@ const api = supertest(app)
 const helper = require('./test_helper')
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 let token = null
 
 beforeEach(async () => {
   await Blog.deleteMany({})
+  await User.deleteMany({})
 
   const user = { username: 'testuser', name: 'test', password: 'asdasdsa' }
-  await api.post('/api/users').send(user)
-
-  const loginResp = await api
-    .post('/api/login')
-    .send({ username: user.username, password: user.password })
+  const userResp = await api.post('/api/users').send(user)
+  const loginResp = await api.post('/api/login').send({
+    username: user.username,
+    password: user.password,
+  })
   token = loginResp.body.token
   const blogObjects = helper.initialNotes.map(
-    (blog) => new Blog({ ...blog, user: user.id })
+    (blog) => new Blog({ ...blog, user: userResp.body.id })
   )
   const promiseArray = blogObjects.map((blog) => blog.save())
   await Promise.all(promiseArray)
@@ -58,6 +60,7 @@ test('post creates a blog', async () => {
     .post('/api/blogs')
     .set('Authorization', `Bearer ${token}`)
     .send(body)
+    .expect(201)
   const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length + 1)
 })
@@ -68,10 +71,12 @@ test('likes value is 0 if missing', async () => {
     author: 'NewAuthor',
     url: 'https://www.vg.no',
   }
+  console.log(token)
   await api
     .post('/api/blogs')
     .set('Authorization', `Bearer ${token}`)
     .send(body)
+    .expect(201)
   const blogsAtEnd = await helper.blogsInDb()
   const newBlog = blogsAtEnd.find((x) => x.title === 'NewBlog')
   assert.strictEqual(newBlog.likes, 0)
@@ -102,19 +107,49 @@ test('respond with 400 if URL is missing', async () => {
 
   assert.strictEqual(response.body.length, helper.initialNotes.length)
 })
+describe('update tests', () => {
+  test('delete', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(204)
 
-test('delete', async () => {
-  const blogsAtStart = await helper.blogsInDb()
-  const blogToDelete = blogsAtStart[0]
-  await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+    const blogsAtEnd = await helper.blogsInDb()
 
-  const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length - 1)
 
-  assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length - 1)
+    const contents = blogsAtEnd.map((r) => r.title)
+    assert(!contents.includes(blogToDelete.title))
+  })
 
-  const contents = blogsAtEnd.map((r) => r.title)
-  assert(!contents.includes(blogToDelete.title))
+  test('delete with wrong user', async () => {
+    const user = { username: 'newTestUser', name: 'test', password: 'dsagfd' }
+    await api.post('/api/users').send(user)
+    const loginResp = await api.post('/api/login').send({
+      username: user.username,
+      password: user.password,
+    })
+    const newUserToken = loginResp.body.token
+
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `Bearer ${newUserToken}`)
+      .expect(401)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length)
+
+    const contents = blogsAtEnd.map((r) => r.title)
+    assert(contents.includes(blogToDelete.title))
+  })
 })
+
 describe('update tests', () => {
   test('update likes', async () => {
     const blogsAtStart = await helper.blogsInDb()
