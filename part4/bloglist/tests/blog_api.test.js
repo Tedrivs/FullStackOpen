@@ -9,10 +9,21 @@ const helper = require('./test_helper')
 
 const Blog = require('../models/blog')
 
+let token = null
+
 beforeEach(async () => {
   await Blog.deleteMany({})
 
-  const blogObjects = helper.initialNotes.map((blog) => new Blog(blog))
+  const user = { username: 'testuser', name: 'test', password: 'asdasdsa' }
+  await api.post('/api/users').send(user)
+
+  const loginResp = await api
+    .post('/api/login')
+    .send({ username: user.username, password: user.password })
+  token = loginResp.body.token
+  const blogObjects = helper.initialNotes.map(
+    (blog) => new Blog({ ...blog, user: user.id })
+  )
   const promiseArray = blogObjects.map((blog) => blog.save())
   await Promise.all(promiseArray)
 })
@@ -43,7 +54,10 @@ test('post creates a blog', async () => {
     author: 'NewAuthor',
     url: 'https://www.vg.no',
   }
-  await api.post('/api/blogs').send(body)
+  await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(body)
   const blogsAtEnd = await helper.blogsInDb()
   assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length + 1)
 })
@@ -54,7 +68,10 @@ test('likes value is 0 if missing', async () => {
     author: 'NewAuthor',
     url: 'https://www.vg.no',
   }
-  await api.post('/api/blogs').send(body)
+  await api
+    .post('/api/blogs')
+    .set('Authorization', `Bearer ${token}`)
+    .send(body)
   const blogsAtEnd = await helper.blogsInDb()
   const newBlog = blogsAtEnd.find((x) => x.title === 'NewBlog')
   assert.strictEqual(newBlog.likes, 0)
@@ -62,7 +79,11 @@ test('likes value is 0 if missing', async () => {
 
 test('respond with 400 if title is missing', async () => {
   const body = { url: 'NewBlog' }
-  await api.post('/api/blogs').send(body).expect(400)
+  await api
+    .post('/api/blogs')
+    .send(body)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(400)
 
   const response = await api.get('/api/blogs')
 
@@ -71,7 +92,11 @@ test('respond with 400 if title is missing', async () => {
 
 test('respond with 400 if URL is missing', async () => {
   const body = { title: 'NewBlog' }
-  await api.post('/api/blogs').send(body).expect(400)
+  await api
+    .post('/api/blogs')
+    .send(body)
+    .set('Authorization', `Bearer ${token}`)
+    .expect(400)
 
   const response = await api.get('/api/blogs')
 
