@@ -50,61 +50,74 @@ test('blogs has property named id', async () => {
   )
 })
 
-test('post creates a blog', async () => {
-  const body = {
-    title: 'NewBlog',
-    author: 'NewAuthor',
-    url: 'https://www.vg.no',
-  }
-  await api
-    .post('/api/blogs')
-    .set('Authorization', `Bearer ${token}`)
-    .send(body)
-    .expect(201)
-  const blogsAtEnd = await helper.blogsInDb()
-  assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length + 1)
-})
+describe('post tests', () => {
+  test('post fails without token', async () => {
+    const body = {
+      title: 'NewBlog',
+      author: 'NewAuthor',
+      url: 'https://www.vg.no',
+    }
+    await api.post('/api/blogs').send(body).expect(401)
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length)
+  })
 
-test('likes value is 0 if missing', async () => {
-  const body = {
-    title: 'NewBlog',
-    author: 'NewAuthor',
-    url: 'https://www.vg.no',
-  }
-  await api
-    .post('/api/blogs')
-    .set('Authorization', `Bearer ${token}`)
-    .send(body)
-    .expect(201)
-  const blogsAtEnd = await helper.blogsInDb()
-  const newBlog = blogsAtEnd.find((x) => x.title === 'NewBlog')
-  assert.strictEqual(newBlog.likes, 0)
-})
+  test('post creates a blog', async () => {
+    const body = {
+      title: 'NewBlog',
+      author: 'NewAuthor',
+      url: 'https://www.vg.no',
+    }
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(body)
+      .expect(201)
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.strictEqual(blogsAtEnd.length, helper.initialNotes.length + 1)
+  })
 
-test('respond with 400 if title is missing', async () => {
-  const body = { url: 'NewBlog' }
-  await api
-    .post('/api/blogs')
-    .send(body)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(400)
+  test('likes value is 0 if missing', async () => {
+    const body = {
+      title: 'NewBlog',
+      author: 'NewAuthor',
+      url: 'https://www.vg.no',
+    }
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(body)
+      .expect(201)
+    const blogsAtEnd = await helper.blogsInDb()
+    const newBlog = blogsAtEnd.find((x) => x.title === 'NewBlog')
+    assert.strictEqual(newBlog.likes, 0)
+  })
 
-  const response = await api.get('/api/blogs')
+  test('respond with 400 if title is missing', async () => {
+    const body = { url: 'NewBlog' }
+    await api
+      .post('/api/blogs')
+      .send(body)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
 
-  assert.strictEqual(response.body.length, helper.initialNotes.length)
-})
+    const response = await api.get('/api/blogs')
 
-test('respond with 400 if URL is missing', async () => {
-  const body = { title: 'NewBlog' }
-  await api
-    .post('/api/blogs')
-    .send(body)
-    .set('Authorization', `Bearer ${token}`)
-    .expect(400)
+    assert.strictEqual(response.body.length, helper.initialNotes.length)
+  })
 
-  const response = await api.get('/api/blogs')
+  test('respond with 400 if URL is missing', async () => {
+    const body = { title: 'NewBlog' }
+    await api
+      .post('/api/blogs')
+      .send(body)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(400)
 
-  assert.strictEqual(response.body.length, helper.initialNotes.length)
+    const response = await api.get('/api/blogs')
+
+    assert.strictEqual(response.body.length, helper.initialNotes.length)
+  })
 })
 describe('update tests', () => {
   test('delete', async () => {
