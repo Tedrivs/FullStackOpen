@@ -71,7 +71,6 @@ test('likes value is 0 if missing', async () => {
     author: 'NewAuthor',
     url: 'https://www.vg.no',
   }
-  console.log(token)
   await api
     .post('/api/blogs')
     .set('Authorization', `Bearer ${token}`)
